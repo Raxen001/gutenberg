@@ -5,6 +5,7 @@
 ### Enhancements
 
 -   Limit concurrent `esbuild` build jobs to half of the available CPU parallelism ([#79889](https://github.com/WordPress/gutenberg/pull/79889)).
+-   Add a `wpPlugin.externals` option to load individual imports from a script module or script that the plugin registers, instead of bundling them or loading them from their default handle ([#PR_NUMBER](https://github.com/WordPress/gutenberg/pull/PR_NUMBER)).
 
 ### Internal
 

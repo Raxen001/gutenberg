@@ -276,6 +276,55 @@ This allows your packages to consume third-party dependencies as externals:
 
 If `handlePrefix` is omitted, it defaults to the namespace key (e.g., `"woo"` → `woo-cart`).
 
+### `wpPlugin.externals`
+
+Individual imports to load from a script module or script that your plugin registers, instead of bundling them or loading them from their default handle. Use it to ship one shared copy of a bundled package such as `@wordpress/ui` across all of your packages and routes, or to load a newer version of a package that WordPress provides, such as `@wordpress/theme`, without replacing the version that WordPress loads.
+
+Each key is an exact import path, and each value sets where that import comes from:
+
+- `module`: the ID of the script module that provides the import in script module builds.
+- `handle` and `global`: the handle of the script that provides the import in classic script builds, and the global variable path where that script exposes it.
+
+Set `module`, `handle` and `global`, or only the ones for the build formats that import the package:
+
+```json
+{
+	"wpPlugin": {
+		"externals": {
+			"@wordpress/ui": {
+				"module": "my-plugin/wp-ui-0-25-0",
+				"handle": "my-plugin-wp-ui-0-25-0",
+				"global": "myPlugin.wpUi"
+			},
+			"@wordpress/dataviews": {
+				"module": "my-plugin/wp-dataviews-14-0-0"
+			},
+			"@wordpress/dataviews/wp": {
+				"module": "my-plugin/wp-dataviews-wp-14-0-0"
+			},
+			"@wordpress/theme": {
+				"handle": "my-plugin-wp-theme-2-0-0",
+				"global": "myPlugin.wpTheme"
+			}
+		}
+	}
+}
+```
+
+With this configuration, `import { Button } from '@wordpress/ui'`:
+
+- In script modules, imports `my-plugin/wp-ui-0-25-0` and adds it to `module_dependencies`.
+- In classic scripts, reads `window.myPlugin.wpUi` and adds `my-plugin-wp-ui-0-25-0` to `dependencies`.
+
+These entries take precedence over the default externals, so `@wordpress/theme` loads from `my-plugin-wp-theme-2-0-0` instead of `wp-theme`.
+
+The build fails, rather than bundling the import or falling back to its default handle, when:
+
+- A file imports a subpath of a listed package (e.g., `@wordpress/dataviews/wp`) that has no entry of its own. Add an entry for each subpath you use.
+- A script module imports an entry that has no `module`, or a classic script imports an entry that has no `handle` and `global`.
+
+Your plugin must register the script modules and scripts that these entries point to.
+
 ### `wpPlugin.pages` (Experimental)
 
 Define admin pages that support routes. Each page gets generated PHP functions for route registration and can be extended by other plugins.
